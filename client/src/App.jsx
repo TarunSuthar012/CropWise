@@ -1,12 +1,13 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
-import Login from './pages/Login'
-import Registration from './pages/Registration'
-import Dashboard from './pages/Dashboard'
-import Profile from './pages/Profile'
-import OfficerView from './pages/OfficerView'
+const Login = lazy(() => import('./pages/Login'))
+const Registration = lazy(() => import('./pages/Registration'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Profile = lazy(() => import('./pages/Profile'))
+const OfficerView = lazy(() => import('./pages/OfficerView'))
 import { TranslationProvider } from './translation/TranslationProvider'
-import VoiceAssistantWidget from './components/VoiceAssistant/VoiceAssistantWidget'
+const VoiceAssistantWidget = lazy(() => import('./components/VoiceAssistant/VoiceAssistantWidget'))
 
 function App() {
   const { session, registrationComplete, loading, refresh, signOut } = useAuth()
@@ -39,72 +40,76 @@ function App() {
 
   return (
     <TranslationProvider>
-      <Routes>
-        {/* Login: only accessible when NOT logged in */}
-        <Route
-          path="/login"
-          element={
-            !session
-              ? <Login onLogin={refresh} />
-              : registrationComplete
-                ? <Navigate to="/dashboard" replace />
-                : <Navigate to="/registration" replace />
-          }
-        />
+      <Suspense fallback={<div className="p-6 text-center" role="status">Loading page...</div>}>
+        <Routes>
+          {/* Login: only accessible when NOT logged in */}
+          <Route
+            path="/login"
+            element={
+              !session
+                ? <Login onLogin={refresh} />
+                : registrationComplete
+                  ? <Navigate to="/dashboard" replace />
+                  : <Navigate to="/registration" replace />
+            }
+          />
 
-        {/* Registration: only accessible when logged in and NOT registered */}
-        <Route
-          path="/registration"
-          element={
-            !session
-              ? <Navigate to="/login" replace />
-              : registrationComplete
-                ? <Navigate to="/dashboard" replace />
-                : <Registration session={session} onComplete={refresh} onSignOut={signOut} />
-          }
-        />
+          {/* Registration: only accessible when logged in and NOT registered */}
+          <Route
+            path="/registration"
+            element={
+              !session
+                ? <Navigate to="/login" replace />
+                : registrationComplete
+                  ? <Navigate to="/dashboard" replace />
+                  : <Registration session={session} onComplete={refresh} onSignOut={signOut} />
+            }
+          />
 
-        {/* Dashboard: only accessible when logged in and registered */}
-        <Route
-          path="/dashboard"
-          element={
-            !session
-              ? <Navigate to="/login" replace />
-              : !registrationComplete
-                ? <Navigate to="/registration" replace />
-                : <Dashboard session={session} onSignOut={signOut} />
-          }
-        />
+          {/* Dashboard: only accessible when logged in and registered */}
+          <Route
+            path="/dashboard"
+            element={
+              !session
+                ? <Navigate to="/login" replace />
+                : !registrationComplete
+                  ? <Navigate to="/registration" replace />
+                  : <Dashboard session={session} onSignOut={signOut} />
+            }
+          />
 
-        {/* Profile: only accessible when logged in and registered */}
-        <Route
-          path="/profile"
-          element={
-            !session
-              ? <Navigate to="/login" replace />
-              : !registrationComplete
-                ? <Navigate to="/registration" replace />
-                : <Profile session={session} onSignOut={signOut} onProfileUpdated={refresh} />
-          }
-        />
+          {/* Profile: only accessible when logged in and registered */}
+          <Route
+            path="/profile"
+            element={
+              !session
+                ? <Navigate to="/login" replace />
+                : !registrationComplete
+                  ? <Navigate to="/registration" replace />
+                  : <Profile session={session} onSignOut={signOut} onProfileUpdated={refresh} />
+            }
+          />
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
 
-        {/* Officer / FPO Command Center */}
-        <Route
-          path="/officer-view"
-          element={
-            !session
-              ? <Navigate to="/login" replace />
-              : !registrationComplete
-                ? <Navigate to="/registration" replace />
-                : <OfficerView session={session} onSignOut={signOut} />
-          }
-        />
+          {/* Officer / FPO Command Center */}
+          <Route
+            path="/officer-view"
+            element={
+              !session
+                ? <Navigate to="/login" replace />
+                : !registrationComplete
+                  ? <Navigate to="/registration" replace />
+                  : <OfficerView session={session} onSignOut={signOut} />
+            }
+          />
 
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-      <VoiceAssistantWidget />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Suspense>
+      <Suspense fallback={null}>
+        <VoiceAssistantWidget />
+      </Suspense>
     </TranslationProvider>
   )
 }

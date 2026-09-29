@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.trim()
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY?.trim()
 
 const PLACEHOLDER_PATTERNS = [
   /YOUR_PROJECT_REF/i,
@@ -10,14 +10,20 @@ const PLACEHOLDER_PATTERNS = [
 ]
 
 export function isSupabaseConfigured() {
-  if (!supabaseUrl?.trim() || !supabaseAnonKey?.trim()) return false
+  if (!supabaseUrl || !supabaseAnonKey) return false
+  try {
+    const url = new URL(supabaseUrl)
+    if (!['http:', 'https:'].includes(url.protocol) || !url.hostname) return false
+  } catch {
+    return false
+  }
   const combined = `${supabaseUrl} ${supabaseAnonKey}`
   return !PLACEHOLDER_PATTERNS.some((re) => re.test(combined))
 }
 
 export const supabase = createClient(
-  supabaseUrl || 'http://localhost',
-  supabaseAnonKey || 'local-dev-key',
+  isSupabaseConfigured() ? supabaseUrl : 'http://localhost:54321',
+  isSupabaseConfigured() ? supabaseAnonKey : 'local-dev-key',
 )
 
 /** Maps PostgREST / Supabase errors to actionable messages for login/signup. */
