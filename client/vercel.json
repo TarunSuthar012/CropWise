@@ -1,0 +1,24 @@
+{
+  "rewrites": [
+    {
+      "source": "/mandi-api/:path*",
+      "destination": "https://cropwise-aiml.onrender.com/mandi/:path*"
+    },
+    {
+      "source": "/schemes-api/:path*",
+      "destination": "https://cropwise-aiml.onrender.com/schemes/:path*"
+    },
+    {
+      "source": "/disease-api/:path*",
+      "destination": "https://cropwise-aiml.onrender.com/disease/:path*"
+    },
+    {
+      "source": "/yield-api/:path*",
+      "destination": "https://cropwise-aiml.onrender.com/yield/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
